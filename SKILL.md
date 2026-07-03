@@ -11,7 +11,7 @@ description: >
   as "One Skill to Rule Them All" — trigger on this phrase too. IMPORTANT:
   this skill should be invoked at the start of every task-oriented session — if
   you are about to use tools to produce deliverables, invoke this skill first.
-  For reliable activation, pair this description with a CLAUDE.md instruction
+  For reliable activation, pair this description with an AGENTS.md instruction
   or harness-level session-start hook (see Recommended Activation Setup) —
   description-level matching alone is not enforceable.
 ---
@@ -51,7 +51,7 @@ Issues. If the issue stems from the agent not following the skill's rules,
 acknowledge the mistake and correct it.
 
 **Activation note:** For reliable session-start activation, pair this skill
-with a CLAUDE.md instruction or harness-level hook (see Recommended
+with an AGENTS.md instruction or harness-level hook (see Recommended
 Activation Setup). The description matches against task-oriented language,
 but description-level matching alone can be missed when the agent is focused on
 the task itself. The skill works as a skill; it works *reliably* as a skill
@@ -85,8 +85,8 @@ vs internal distinction — lives in the public repo, not in this skill body.
 If a user asks how to get started or how the skill works from their
 perspective, point them to:
 
-- README: https://github.com/rebelytics/one-skill-to-rule-them-all/blob/main/README.md
-- USER-GUIDE: https://github.com/rebelytics/one-skill-to-rule-them-all/blob/main/USER-GUIDE.md
+- README: <https://github.com/rebelytics/one-skill-to-rule-them-all/blob/main/README.md>
+- USER-GUIDE: <https://github.com/rebelytics/one-skill-to-rule-them-all/blob/main/USER-GUIDE.md>
 
 If web access is available, fetch the relevant section directly rather than
 paraphrasing — the public docs are the source of truth for user-facing
@@ -96,11 +96,11 @@ operational instruction for the agent.
 ## Conventions
 
 `[workspace folder]` refers to the user's persistent workspace directory —
-the location where files survive between sessions. In Cowork, this is the
-folder selected at session start. In Claude Code, this is the project root.
-In web-based chat interfaces without filesystem access, the skill shifts
-into handoff doc mode (see Environment Compatibility) and the user manages
-these files manually.
+the location where files survive between sessions. In pi, this is the
+knowledge-base folder chosen during setup (Step 4 of the installation guide).
+All observation logs, cross-cutting principles, and staged skill updates live
+there. pi has filesystem access in every session, so the persistent-storage
+workflow applies; handoff-doc mode (see Environment Compatibility) is not needed.
 
 ---
 
@@ -112,7 +112,7 @@ request against skill descriptions, a skill that monitors *all* tasks can be
 overlooked when the agent is focused on the task itself.
 
 To maximise activation reliability, add the following instruction to your
-configuration file (e.g., CLAUDE.md, project instructions, or equivalent):
+configuration file (e.g., AGENTS.md, project instructions, or equivalent):
 
 ```
 At the start of any task-oriented session — any interaction where you will
@@ -133,14 +133,14 @@ The description is designed to match broadly against task-oriented language
 deliverables"), but a configuration-level instruction provides an additional
 safety net that doesn't depend on description matching alone.
 
-**Note for all users:** Once CLAUDE.md or equivalent configuration is in place
+**Note for all users:** Once AGENTS.md or equivalent configuration is in place
 with the activation instruction above, the description-level triggers serve as
 a backup rather than the primary mechanism. This dual-layer approach prevents
 the skill from being skipped in sessions where description matching alone might
 miss the invocation signal.
 
 **Anti-pattern to avoid:** Relying on one skill to load another is fragile
-compared to loading both independently from CLAUDE.md. If task-observer depended
+compared to loading both independently from AGENTS.md. If task-observer depended
 on another skill to invoke it, a breakdown in that chain would silence all
 observation activity. Instead, load both task-observer and any related skills
 directly from your configuration instructions.
@@ -148,7 +148,7 @@ directly from your configuration instructions.
 ### Detecting the Configuration File
 
 At session start, the skill should check whether a configuration file
-(CLAUDE.md, project instructions, or equivalent) exists and contains the
+(AGENTS.md, project instructions, or equivalent) exists and contains the
 activation instruction. This detection serves two purposes:
 
 1. **For users who already have the config:** Confirms the dual-layer
@@ -162,7 +162,7 @@ activation instruction. This detection serves two purposes:
 The detection approach depends on the environment:
 
 - **Environments with file system access** (desktop tools, terminal-based
-  tools): Check for a CLAUDE.md or equivalent file in the workspace root.
+  tools): Check for an AGENTS.md or equivalent file in the workspace root.
   If found, scan it for a task-observer activation instruction. If the file
   exists but doesn't mention task-observer, suggest adding the instruction.
   If no config file exists at all, suggest creating one.
@@ -177,15 +177,15 @@ suggestion brief — one or two sentences, not a full tutorial.
 
 ### Compaction Behaviour
 
-When a session context compacts mid-task, the CLAUDE.md structural trigger
+When a session context compacts mid-task, the AGENTS.md structural trigger
 re-invokes task-observer on the resumed session. No explicit re-invocation
 is needed on the agent's part — the same activation instruction that fired
 at the start of the original session fires again at the start of the
-resumed session, because the resumed session reads CLAUDE.md anew.
+resumed session, because the resumed session reads AGENTS.md anew.
 Observations from before and after compaction append to the same log file
 with continuous numbering.
 
-This is the primary reason the CLAUDE.md structural trigger exists —
+This is the primary reason the AGENTS.md structural trigger exists —
 description-level triggers alone would not reliably guarantee re-invocation
 on a resumed session, because the resumed session's opening message may
 not match task-observer's trigger phrases even when the ongoing task is
@@ -920,7 +920,7 @@ Examples: Adding a new anti-pattern to a skill's anti-patterns list.
 Clarifying that inline code comments should be context-aware within their
 own document.
 
-After creating or updating any skill file, always present it using `present_files` so the user can review and install it directly from the conversation.
+After creating or updating any skill file, write it to the workspace staging path and tell the user the exact file path so they can review it. In pi, the user installs it by replacing the live `SKILL.md` in `~/.pi/agent/skills/` — do not write directly to that protected path.
 
 ### Substantial Changes (Use Skill-Creator if Available)
 
@@ -960,38 +960,37 @@ When creating a new skill, determine its type early:
 - If uncertain, default to open-source — strip out specifics and generalise,
   then let the user decide whether any internal details need to be added
 
-
 ## Task-Oriented Sessions — Observation vs Action
 
-Skill development and iteration work happens in multiple environments: in Cowork with persistent storage, in Claude Code with project directories, and in web-based chat without file system access. Cross-environment coordination is essential to prevent regressions — a skill updated in one environment can silently omit content from another if the wrong base file is used.
+Skill development and iteration work happens in the pi environment. The live skill file is read via normal tools, but never overwritten directly — Pi's security layer blocks writes under `~/.pi/agent/`.
 
 ### Skill file locations — read-only mount vs workspace copy
 
 When working with skills, understand the distinction between the **live file** (the authoritative source) and **workspace copies** (working drafts or staged updates):
 
-1. **The live file is read-only in Cowork.** In Cowork, the live skill file is mounted read-only at `.claude/skills/{skill}/SKILL.md`. You can read it, but you cannot edit it directly — the file system will reject write attempts with `EROFS` (Read-Only File System). This is intentional: it prevents accidental overwrites of the canonical version.
+1. **The live file is under `~/.pi/agent/skills/`.** In pi, the live skill file is at `~/.pi/agent/skills/{skill}/SKILL.md`. Read it with normal file tools. Do not edit it directly — Pi's security layer intercepts writes in `~/.pi/agent/`, and the user must move staged files into place.
 
 2. **Read from the live file, not cached memory.** Always start skill edits by reading the current live file — not from a workspace copy, a prior draft, or a memory-based reconstruction. This is the only way to guarantee your updates are based on the current canonical content.
 
 3. **Stage edits in the workspace folder.** Write updated versions to `[workspace folder]/skill-updates/[date]/[skill-name]/SKILL.md`. This separation keeps the read-only mount clean and gives you a clear staging area for review before the user replaces the live file.
 
-4. **After staging, present the file for user review.** Always use `present_files` to show the updated skill so the user can review changes and upload directly. Do not attempt to write directly to the mounted skills directory — that will fail with a permission error.
+4. **After staging, tell the user the file path for review.** Write the updated skill to the workspace staging path and report the exact file path. The user reviews it and installs it by replacing the live `~/.pi/agent/skills/{skill}/SKILL.md` themselves. Do not attempt to write directly to `~/.pi/agent/skills/` — that will fail with a permission error.
 
-5. **Before overwriting or replacing any existing staged or workspace copy of a skill, diff it against the live file.** If they differ, the workspace copy is stale and your edits must be rebased on the live version — otherwise you risk silently dropping content added by another session. This rule is also codified in CLAUDE.md under "Skill Editing — Always Start From the Live File" as a cross-environment guard. The concrete failure mode: a Claude Code session produced an updated skill that was based on a stale snapshot and silently omitted two substantial sections added to the live skill earlier the same day. The regression was caught only because a pre-merge diff against the mount revealed the missing content.
+5. **Before overwriting or replacing any existing staged or workspace copy of a skill, diff it against the live file.** If they differ, the workspace copy is stale and your edits must be rebased on the live version — otherwise you risk silently dropping content added by another session. This rule is also codified in AGENTS.md under "Skill Editing — Always Start From the Live File" as a guard. The concrete failure mode: a session produced an updated skill that was based on a stale snapshot and silently omitted two substantial sections added to the live skill earlier the same day. The regression was caught only because a pre-merge diff against the live file revealed the missing content.
 
 ### Task-session skill updates — stage in the workspace
 
 When a task session produces a skill update (through weekly review, direct improvement, or observation-driven changes), follow this workflow:
 
-1. Read the live file at `.claude/skills/{skill}/SKILL.md`
+1. Read the live file at `~/.pi/agent/skills/{skill}/SKILL.md`
 2. Make all edits to that content
 3. Save the complete updated file to `[workspace folder]/skill-updates/[today]/[skill-name]/SKILL.md`
-4. Use `present_files` to show it to the user for review
-5. The user uploads the file to install it
+4. Tell the user the exact path so they can review it
+5. The user copies the file into `~/.pi/agent/skills/{skill}/SKILL.md` to install it
 
 This keeps the mount clean, stages updates for review, and gives you a clear separation between read-only source and working copy.
 
-**Cross-environment note:** Claude Code now shares the same skills as Cowork via the anthropic-skills capability. The "always start from the live file" rule applies in both environments. In Claude Code, the live file is surfaced by the capabilities system; in Cowork, it's the read-only mount at `.claude/skills/{skill}/SKILL.md`. The diff-before-overwrite requirement applies regardless of which environment produced the update.
+**Pi note:** The live skill file is at `~/.pi/agent/skills/{skill}/SKILL.md`. Read from there; stage updates in `[workspace folder]/skill-updates/...`; do not overwrite the live file directly. The diff-before-overwrite requirement applies to every update.
 
 ---
 ---
@@ -1167,24 +1166,22 @@ respect prior declines.
    > Monday/Wednesday/Friday mornings — so it doesn't depend on you
    > being mid-session at the right moment. Want help setting one up?"
 
-   - **If the user says yes:** walk through registering a scheduled task
-     using the platform's scheduling capability. In Cowork, invoke the
-     `create-shortcut` skill and its `set_scheduled_task` tool. In
-     terminal-based environments, use cron or an equivalent scheduler.
-     Use task name `weekly-skill-review` (or similar) and a sensible
-     default cadence; let the user pick the day(s) and time. Once
-     registered, read the draft task description at
-     `[workspace folder]/skill-observations/scheduled-task-draft.md` and
-     pass it as the task prompt. On success, write today's date to
+   - **If the user says yes:** pi has no built-in scheduler, so set up a
+     recurring manual review session instead. Help the user choose a cadence
+     (e.g., Monday/Wednesday/Friday mornings) and a consistent session name
+     like `weekly-skill-review`. Provide the draft task description from
+     `[workspace folder]/skill-observations/scheduled-task-draft.md` for
+     them to save in their own reminder system (calendar, cron, etc.). On
+     success, write today's date to
      `[workspace folder]/skill-observations/scheduler-registered.txt`.
    - **If the user says no or defers:** write today's date to
      `[workspace folder]/skill-observations/scheduled-review-decline.txt`
      to suppress the recommendation for 30 days. Proceed to Step 1 and
      run the in-session fallback.
 
-4. If no scheduling capability is available in the current environment,
-   skip the recommendation silently and proceed to Step 1. Do not surface
-   the recommendation in environments where the user couldn't act on it.
+4. In pi there is no built-in scheduler, so always recommend a recurring
+   manual review session on a chosen cadence. If the user declines, write
+   today's date to the decline marker and proceed to Step 1.
 
 The 30-day suppression isn't permanent. If the in-session fallback keeps
 firing within the suppression window — a signal that the recurring need
@@ -1255,10 +1252,11 @@ skip it. Instead, route the improvement to a **complementary skill** — a
 user-owned skill named `{system-skill}-extras` (e.g., `docx-extras`) that
 layers additional guidance on top of the system skill. If the complementary
 skill doesn't exist yet, create it. The complementary skill should:
+
 - State which system skill it extends
 - Contain only the delta — the additional rules, anti-patterns, or guidance
   not present in the system skill
-- Be loaded alongside the system skill (add a note to CLAUDE.md or
+- Be loaded alongside the system skill (add a note to AGENTS.md or
   equivalent configuration if needed)
 
 This ensures observations targeting system skills are still actionable,
@@ -1287,7 +1285,11 @@ Write today's date to
 
 **Step 8 — Present summary and user action items**
 
-Present each updated skill file using `present_files`, then show the user a summary following the format in Delivering Updated Skills above. The user can install updated skills directly from the conversation using the upload button on each presented file.
+Tell the user the exact path to each updated skill file saved in
+`[workspace folder]/skill-updates/[date]/[skill-name]/SKILL.md`, then show a
+summary following the format in Delivering Updated Skills above. The user
+reviews the file and installs it by replacing the live
+`~/.pi/agent/skills/[skill-name]/SKILL.md` themselves.
 
 ### Constraints
 
@@ -1304,10 +1306,10 @@ Present each updated skill file using `present_files`, then show the user a summ
 ## Delivering Updated Skills to the User
 
 When the weekly review (or any other process) produces updated skill files,
-they are delivered to the user through the conversation using `present_files`.
-Cowork's UI includes an upload button on presented skill files that allows
-the user to install them directly into their capabilities — no manual file
-copying needed.
+they are saved to the workspace folder and the user is told the exact path.
+In pi, the user installs an updated skill by replacing the live
+`~/.pi/agent/skills/[skill-name]/SKILL.md` themselves — the agent must not
+write directly to `~/.pi/agent/skills/` because Pi's security layer blocks it.
 
 ### Delivery Process
 
@@ -1317,8 +1319,9 @@ copying needed.
    [workspace folder]/skill-updates/[date]/[skill-name]/SKILL.md
    ```
 
-2. Present each updated skill file using `present_files` so the user can
-   review it inline and install it directly via the upload button.
+2. Tell the user the exact path to each updated skill file so they can
+   review it and copy it into `~/.pi/agent/skills/[skill-name]/SKILL.md` to
+   install it.
 
 3. Present the user with a summary using this format:
 
@@ -1351,7 +1354,7 @@ appears in more than two date directories, delete the oldest copies. This
 prevents the workspace from accumulating stale update history while still
 keeping a short rollback window.
 
-3. Do not proceed with other work until the user has acknowledged the
+1. Do not proceed with other work until the user has acknowledged the
    summary. The user does not need to replace the files immediately, but
    they should be aware of what's pending.
 
@@ -1444,60 +1447,8 @@ over between sessions automatically.
 
 ### Without Persistent Storage
 
-In environments without file system access (web-based chat interfaces or
-similar), the skill still works — the observation methodology is environment-
-independent. The difference is that persistence becomes the user's
-responsibility, and the skill shifts into **handoff doc mode** to support
-this.
-
-**How handoff doc mode works:**
-
-- Observations are captured within the conversation and surfaced before the
-  session ends, as usual
-- Instead of writing to a log file, observations are collected in-session
-  and presented in a structured **handoff document** before the session ends
-- The handoff doc includes: all observations in full format, any decisions
-  made during the session, action items and next steps, and any working
-  artifacts (drafts, analyses) that need to survive into the next session
-- The user copies this document to their own storage (notes app, file system,
-  etc.) and pastes it into the next session to restore context
-- Cross-cutting principles should be included in the handoff doc so the user
-  can provide them when starting a new session
-
-**Proactive handoff generation:** In sessions without persistent storage,
-don't wait for the user to request a handoff doc. When the conversation
-starts to wind down — the user is summarising, saying "that's it for now,"
-or the substance is wrapping up — proactively offer to generate one. A
-premature offer is a minor interruption; a missing one is lost work.
-
-**Handoff doc format:**
-
-```markdown
-# Session Handoff: [Session Topic]
-
-**Date:** [date]
-**Context:** [what was worked on and what the next session needs to know]
-
-## Decisions Made
-[numbered list of decisions]
-
-## Observations Logged
-[full observation entries in standard format]
-
-## Cross-Cutting Principles (current)
-[any principles that were active or newly added]
-
-## Action Items
-[what needs to happen next, with enough context to resume]
-
-## Working Artifacts
-[any drafts, analyses, or intermediate work products in full]
-```
-
-This is less seamless than the persistent-storage workflow, but the core value
-— systematically capturing insights that would otherwise be lost — is
-preserved. The observation format and surfacing protocol are identical in both
-environments.
+pi always has filesystem access, so the persistent-storage workflow applies.
+Handoff-doc mode is not needed in this environment.
 
 ---
 
@@ -1516,8 +1467,8 @@ environments.
 | Author attribution? | Required for open-source skills; use the template |
 | Cross-cutting principle? | Add to principles file, enforce during regeneration |
 | Confidentiality check? | Four layers: observation, pre-creation, post-draft, structural |
-| No persistent storage? | Handoff doc mode — observations surfaced in a structured doc at session end |
-| Scheduler automation? | Step 0 of weekly review auto-checks; silent until tool is available |
+| No persistent storage? | Not applicable in pi — filesystem access is always available |
+| Scheduler automation? | pi has no built-in scheduler; use a recurring manual review session on a chosen cadence |
 | Observation numbering? | Mandatory pre-logging search ensures no collisions; never use cached numbers |
 | Log archival? | Event-driven — resolved entries are archived on the next log write |
 | Simplification signals? | Watch for one-off rules, never-used sections, elaborate workflows users skip, and contradictions |
