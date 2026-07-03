@@ -1,0 +1,56 @@
+# docfence type for task-observer CHANGES.md (skill-update rationale docs).
+# Rules are embedded into the scaffolded doc as a ```spec block (document scope)
+# so any CHANGES.md produced from `docfence new changes` self-validates.
+#
+# Install: copy this file into the knowledge base once:
+#   mkdir -p ~/repos/skill-knowledge-base/.docfence/types
+#   cp <this file> ~/repos/skill-knowledge-base/.docfence/types/changes.toml
+# docfence walks up from the target CHANGES.md to find .docfence/.
+
+name = "changes"
+statuses = ["draft", "clean"]
+required_fields = []
+
+[defaults]
+max_chars = 4000
+banned_words = ["Resolves: symptom"]
+required_sections = [
+  "Net change",
+  "User's end goal",
+  "Surface symptom",
+  "Resolves",
+  "Change classification",
+  "Deletions inventory",
+  "Per-change rationale",
+]
+
+[defaults.match]
+net_change_skill = '^Net change \(SKILL\.md'
+resolves_end_goal = '^Resolves: end goal$'
+
+[template_vars]
+id = ""
+title = "Skill update rationale"
+owner = "task-observer"
+status = "draft"
+
+[template_vars.sections."Net change"]
+fill = "Three counts on separate lines: `Net change (SKILL.md, loaded every session): +A / -D = N lines`, `Net change (progressive disclosure, reference files read on demand): +A / -D = N lines`, `Total: +A / -D = N lines`. Compute SKILL.md count by diffing staged vs live; progressive-disclosure counts reference files offloaded via strategy A."
+
+[template_vars.sections."User's end goal"]
+fill = "[REPLACE] What the user wants long-term — the durable outcome, not the one-time incident."
+
+[template_vars.sections."Surface symptom"]
+fill = "[REPLACE] What went wrong this once (the blocked attempt / friction observed)."
+
+[template_vars.sections."Resolves"]
+fill = "Resolves: end goal   # must be 'end goal'; 'symptom' is rejected by docfence (banned_words)."
+
+[template_vars.sections."Change classification"]
+fill = "One line per change, tagged: A (offload to reference files), B (net-zero budget), C (centralize cross-cutting rule), or Direct fix (use sparingly; never to justify a net addition)."
+
+[template_vars.sections."Deletions inventory"]
+fill = "Every semantic deletion (section/line removed or shortened, not whitespace) + one line of reasoning for why it is safe to drop. Or `No deletions.` Mandatory — prevents silently dropping meaningful content."
+
+[template_vars.sections."Per-change rationale"]
+fill = "What changed, which observation (#N) or principle drove it, reasoning. For any change touching persisted state (profiles, tokens, cookies, /tmp, caches, credentials), add a `Second-session check:` line describing what happens after a reboot / on the next session."

@@ -650,9 +650,22 @@ The agent did, what the user corrected, or what pattern emerged. Include enough
 detail that someone reading this weeks later can understand the context
 without having seen the original conversation.]
 
+**User's end goal:** [What the user wants long-term — the durable outcome they
+are actually trying to achieve. Capture this separately from the Issue so the
+improvement is judged against the goal, not against the one-time incident.
+If unclear, ask the user before logging.]
+
+**Workaround user employed:** [The one-time escape hatch the user used to get
+past the incident, if any (e.g. "manually launched Chrome with
+--user-data-dir=/tmp/..."). This is NOT the fix — do not promote it to the
+official improvement without checking it resolves the end goal and survives
+across sessions.]
+
 **Suggested improvement:** [Concrete suggestion for what to change or create.
 For existing skills, reference the specific section or rule. For new skills,
-describe the scope and key components.]
+describe the scope and key components. Must target the **User's end goal**,
+not just the Issue — and must not simply restate the Workaround user employed
+unless it genuinely resolves the end goal durably.]
 
 **Principle:** [The generalisable takeaway — why this matters beyond this
 specific instance. This is the most important part. It turns a single
@@ -1310,6 +1323,27 @@ reviews the file and installs it by replacing the live
 
 ---
 
+## Second-session recurrence check
+
+Any change that touches **persisted state** — profiles, user-data-dirs,
+tokens, cookies, caches, credentials, temp/scratch paths, or session
+storage — must describe what happens **on the next session and after a
+reboot**. State on ephemeral storage (e.g. `/tmp/`) is wiped on reboot, so a
+workaround that relies on it forces the user to redo the work every session —
+exactly the friction observations are meant to eliminate.
+
+Before staging such a change, answer in `CHANGES.md` (Per-change rationale):
+**`Second-session check:`** one line stating whether the state persists
+across a reboot, where it lives, and whether the next session reuses it
+automatically. If it does not persist, the change does not resolve the user's
+end goal — rework it to use persistent storage before staging.
+
+This is the concrete test that catches "codified a throwaway workaround as
+the official fix." It is reinforced by the `User's end goal` / `Workaround
+user employed` split in the observation format.
+
+---
+
 ## Delivering Updated Skills to the User
 
 When the weekly review (or any other process) produces updated skill files,
@@ -1326,82 +1360,63 @@ write directly to `~/.pi/agent/skills/` because Pi's security layer blocks it.
    [workspace folder]/skill-updates/[date]/[skill-name]/SKILL.md
    ```
 
-2. Next to each staged skill file, write a structured change rationale doc
-   named `CHANGES.md` in the same directory:
-
-   ```
-   [workspace folder]/skill-updates/[date]/[skill-name]/CHANGES.md
-   ```
-
-   This doc explains **why** the changes were made — reasoning, context, and
-   basis (which observations/principles drove each change). Keep it **under
-   50 lines**. Structure:
-
-   - At the **very top**, a net-change estimate split into two counts:
-     ```
-     Net change (SKILL.md, loaded every session): +[add] / -[del] = [net] lines
-     Net change (progressive disclosure, reference files read on demand): +[add] / -[del] = [net] lines
-     Total: +[add] / -[del] = [net] lines
-     ```
-     - **SKILL.md** count: diff the staged SKILL.md against the live file at
-       `~/.pi/agent/skills/[skill-name]/SKILL.md`
-       (`diff live.md staged.md | grep -c '^>'` for additions,
-       `grep -c '^<'` for deletions). This is the **load-bearing metric** —
-       content here is paid in tokens every session the skill is active.
-     - **Progressive disclosure** count: any new or changed **reference
-       files** offloaded via strategy A (sibling docs the agent reads on
-       demand, not auto-loaded). Count their additions/deletions separately
-       from SKILL.md.
-     - **Total**: the sum. The validation gate applies to **SKILL.md only**
-       (it must not grow); progressive-disclosure files may grow because they
-       are not loaded every session.
-   - Then a **change classification analysis** — for each change, state which
-     shrink strategy applies (one line each):
-     - **A — Offload to reference files:** SKILL.md keeps only the rule + a
-       one-line pointer; the detail moves to a sibling reference doc the
-       agent reads on demand.
-     - **B — Net-zero budget:** every addition must fund an equal cut within
-       the same skill (add a section → remove or trim another of equal
-       weight).
-     - **C — Centralize cross-cutting rules:** don't duplicate a rule that
-       applies to many skills; move it to
-       `[workspace folder]/skill-observations/cross-cutting-principles.md`
-       and leave only a pointer (or nothing) in the skill.
-     - **Direct fix** — a targeted edit that doesn't fit A/B/C (correcting a
-       wrong statement, updating a path). Use sparingly; never use "direct
-       fix" to justify a net addition.
-   - Then a **deletions inventory** — list **every semantic deletion** (what
-     was removed or shortened, not whitespace): the section/line removed, and
-     **one line of reasoning** for why it is safe to drop. If nothing was
-     deleted, state `No deletions.` This is mandatory: explicitly listing
-     deletions prevents the agent from silently dropping meaningful content.
-   - Then a short section per remaining change: what changed, which
-     observation (#N) or principle drove it, and the reasoning.
-
-3. **Validate the update did not grow the skill.** Run the validation script
-   from this skill's directory against the live and staged files:
+2. Scaffold the rationale doc with docfence. One-time setup: copy this skill's
+   `.docfence/types/changes.toml` into the knowledge base at
+   `[workspace folder]/.docfence/types/changes.toml` so docfence finds it
+   when validating staged CHANGES.md files. Then scaffold each rationale doc:
 
    ```bash
-   scripts/validate-update.sh \
-     ~/.pi/agent/skills/[skill-name]/SKILL.md \
-     "[workspace folder]/skill-updates/[date]/[skill-name]/SKILL.md" \
-     "[workspace folder]/skill-updates/[date]/[skill-name]/CHANGES.md"
+   docfence new changes \
+     --output "[workspace folder]/skill-updates/[date]/[skill-name]/CHANGES.md"
    ```
 
-   The script prints live/staged line counts, additions, deletions, and net,
-   and **exits non-zero if the staged skill grew** (net > 0) or if
-   `CHANGES.md` is missing, over 50 lines, or lacks the leading
-   `Net change:` line. On failure, either trim the skill so it does not
-   grow, or justify the growth explicitly in `CHANGES.md` and surface it to
-   the user for approval. Do not present an update that fails validation
-   without an explicit justification.
+   The scaffolded `CHANGES.md` embeds a ```` ```spec ```` block (document
+   scope) that self-enforces: required sections, the
+   `Net change (SKILL.md...` line format, `Resolves: end goal` (the value
+   `symptom` is banned), and a ~50-line char budget. Fill in each section.
+   The required sections are: **Net change** (split SKILL.md vs
+   progressive-disclosure counts — SKILL.md is the load-bearing metric paid
+   every session; progressive-disclosure = reference files offloaded via
+   strategy A, not auto-loaded), **User's end goal**, **Surface symptom**,
+   **Resolves**, **Change classification** (A offload-to-reference /
+   B net-zero budget / C centralize cross-cutting / Direct fix — never to
+   justify a net addition), **Deletions inventory** (every semantic deletion
+   + one line of reasoning; `No deletions.` if none — mandatory, prevents
+   silently dropping content), and **Per-change rationale** (what changed,
+   which observation/principle drove it; add a `Second-session check:` line
+   for any change touching persisted state — see Second-session recurrence
+   check above). For the full rule set see `.docfence/types/changes.toml` in
+   this skill, or run `docfence types` / `docfence --help`.
 
-4. Tell the user the exact path to each updated skill file (and its
+3. **Root-cause gate (before staging).** The `User's end goal`, `Surface
+   symptom`, and `Resolves` fields are mandatory. `Resolves:` must read
+   `end goal`; if it can only honestly read `symptom`, the change does not
+   resolve the user's problem — rework it before staging. docfence rejects
+   `Resolves: symptom` automatically (banned word).
+
+4. **Validate.** Run both gates; both must pass before presenting:
+
+   ```bash
+   # (a) CHANGES.md structure + root-cause gate (docfence)
+   docfence validate "[workspace folder]/skill-updates/[date]/[skill-name]/CHANGES.md"
+   # (b) no-growth gate for SKILL.md (cross-file diff; docfence can't diff)
+   scripts/validate-update.sh \
+     ~/.pi/agent/skills/[skill-name]/SKILL.md \
+     "[workspace folder]/skill-updates/[date]/[skill-name]/SKILL.md"
+   ```
+
+   `validate-update.sh` exits non-zero if the staged SKILL.md grew
+   (net > 0). On failure, trim the skill (strategy A/B/C) or justify the
+   growth explicitly in `CHANGES.md` and surface it for user approval. Do
+   not present an update that fails either gate without explicit
+   justification.
+
+5. Tell the user the exact path to each updated skill file (and its
    `CHANGES.md`) so they can review them and copy the SKILL.md into
    `~/.pi/agent/skills/[skill-name]/SKILL.md` to install it. The CHANGES.md
    stays in the staging area as the audit record — it is not installed.
 
-5. Present the user with a summary using this format:
+6. Present the user with a summary using this format:
 
    ```
    ## Weekly Skill Review Complete — [date]
