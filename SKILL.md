@@ -1346,8 +1346,28 @@ write directly to `~/.pi/agent/skills/` because Pi's security layer blocks it.
      (e.g. `git diff --no-index live.md staged.md --stat`, or
      `diff live.md staged.md | grep -c '^>'` for additions and `grep -c '^<'`
      for deletions).
-   - Then a short section per change: what changed, which observation
-     (#N) or principle drove it, and the reasoning.
+   - Then a **change classification analysis** — for each change, state which
+     shrink strategy applies (one line each):
+     - **A — Offload to reference files:** SKILL.md keeps only the rule + a
+       one-line pointer; the detail moves to a sibling reference doc the
+       agent reads on demand.
+     - **B — Net-zero budget:** every addition must fund an equal cut within
+       the same skill (add a section → remove or trim another of equal
+       weight).
+     - **C — Centralize cross-cutting rules:** don't duplicate a rule that
+       applies to many skills; move it to
+       `[workspace folder]/skill-observations/cross-cutting-principles.md`
+       and leave only a pointer (or nothing) in the skill.
+     - **Direct fix** — a targeted edit that doesn't fit A/B/C (correcting a
+       wrong statement, updating a path). Use sparingly; never use "direct
+       fix" to justify a net addition.
+   - Then a **deletions inventory** — list **every semantic deletion** (what
+     was removed or shortened, not whitespace): the section/line removed, and
+     **one line of reasoning** for why it is safe to drop. If nothing was
+     deleted, state `No deletions.` This is mandatory: explicitly listing
+     deletions prevents the agent from silently dropping meaningful content.
+   - Then a short section per remaining change: what changed, which
+     observation (#N) or principle drove it, and the reasoning.
 
 3. **Validate the update did not grow the skill.** Run the validation script
    from this skill's directory against the live and staged files:
