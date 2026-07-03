@@ -1349,12 +1349,30 @@ write directly to `~/.pi/agent/skills/` because Pi's security layer blocks it.
    - Then a short section per change: what changed, which observation
      (#N) or principle drove it, and the reasoning.
 
-3. Tell the user the exact path to each updated skill file (and its
+3. **Validate the update did not grow the skill.** Run the validation script
+   from this skill's directory against the live and staged files:
+
+   ```bash
+   scripts/validate-update.sh \
+     ~/.pi/agent/skills/[skill-name]/SKILL.md \
+     "[workspace folder]/skill-updates/[date]/[skill-name]/SKILL.md" \
+     "[workspace folder]/skill-updates/[date]/[skill-name]/CHANGES.md"
+   ```
+
+   The script prints live/staged line counts, additions, deletions, and net,
+   and **exits non-zero if the staged skill grew** (net > 0) or if
+   `CHANGES.md` is missing, over 50 lines, or lacks the leading
+   `Net change:` line. On failure, either trim the skill so it does not
+   grow, or justify the growth explicitly in `CHANGES.md` and surface it to
+   the user for approval. Do not present an update that fails validation
+   without an explicit justification.
+
+4. Tell the user the exact path to each updated skill file (and its
    `CHANGES.md`) so they can review them and copy the SKILL.md into
    `~/.pi/agent/skills/[skill-name]/SKILL.md` to install it. The CHANGES.md
    stays in the staging area as the audit record — it is not installed.
 
-4. Present the user with a summary using this format:
+5. Present the user with a summary using this format:
 
    ```
    ## Weekly Skill Review Complete — [date]
