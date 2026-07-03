@@ -1337,15 +1337,24 @@ write directly to `~/.pi/agent/skills/` because Pi's security layer blocks it.
    basis (which observations/principles drove each change). Keep it **under
    50 lines**. Structure:
 
-   - At the **very top**, a net-change estimate for the accompanying SKILL.md:
+   - At the **very top**, a net-change estimate split into two counts:
      ```
-     Net change: +[additions] / -[deletions] = [net] lines
+     Net change (SKILL.md, loaded every session): +[add] / -[del] = [net] lines
+     Net change (progressive disclosure, reference files read on demand): +[add] / -[del] = [net] lines
+     Total: +[add] / -[del] = [net] lines
      ```
-     Compute additions/deletions by diffing the staged SKILL.md against the
-     live file at `~/.pi/agent/skills/[skill-name]/SKILL.md`
-     (e.g. `git diff --no-index live.md staged.md --stat`, or
-     `diff live.md staged.md | grep -c '^>'` for additions and `grep -c '^<'`
-     for deletions).
+     - **SKILL.md** count: diff the staged SKILL.md against the live file at
+       `~/.pi/agent/skills/[skill-name]/SKILL.md`
+       (`diff live.md staged.md | grep -c '^>'` for additions,
+       `grep -c '^<'` for deletions). This is the **load-bearing metric** —
+       content here is paid in tokens every session the skill is active.
+     - **Progressive disclosure** count: any new or changed **reference
+       files** offloaded via strategy A (sibling docs the agent reads on
+       demand, not auto-loaded). Count their additions/deletions separately
+       from SKILL.md.
+     - **Total**: the sum. The validation gate applies to **SKILL.md only**
+       (it must not grow); progressive-disclosure files may grow because they
+       are not loaded every session.
    - Then a **change classification analysis** — for each change, state which
      shrink strategy applies (one line each):
      - **A — Offload to reference files:** SKILL.md keeps only the rule + a
