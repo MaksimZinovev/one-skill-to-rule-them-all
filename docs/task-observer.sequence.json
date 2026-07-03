@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "How task-observer works in pi",
+    "subtitle": "Same agent, two hats: task executor + self-observer",
+    "output": "docs/task-observer-sequence.html",
+    "viewBox": [800, 640]
+  },
+  "participants": [
+    { "id": "user", "type": "external", "label": "User", "sublabel": "gives tasks" },
+    { "id": "agent", "type": "backend", "label": "pi agent", "sublabel": "executor + observer" },
+    { "id": "fs", "type": "database", "label": "Filesystem", "sublabel": "logs + updates" }
+  ],
+  "segments": [
+    { "from": 160, "to": 240, "label": "Session start" },
+    { "from": 260, "to": 360, "label": "Task work" },
+    { "from": 400, "to": 540, "label": "Review + install" }
+  ],
+  "messages": [
+    { "from": "user", "to": "agent", "y": 180, "label": "start task session", "variant": "default" },
+    { "from": "agent", "to": "fs", "y": 210, "label": "read AGENTS.md + load observer", "variant": "dashed" },
+    { "from": "user", "to": "agent", "y": 280, "label": "work on task", "variant": "emphasis" },
+    { "from": "agent", "to": "fs", "y": 330, "label": "write observation silently", "variant": "dashed" },
+    { "from": "user", "to": "agent", "y": 430, "label": "'Any observations logged?'", "variant": "default" },
+    { "from": "agent", "to": "user", "y": 460, "label": "grouped observations", "variant": "return" },
+    { "from": "user", "to": "agent", "y": 500, "label": "approve", "variant": "emphasis" },
+    { "from": "agent", "to": "fs", "y": 540, "label": "stage skill update", "variant": "dashed" }
+  ],
+  "activations": [
+    { "participant": "agent", "from": 180, "to": 540, "type": "backend" },
+    { "participant": "fs", "from": 200, "to": 230, "type": "database" },
+    { "participant": "fs", "from": 320, "to": 350, "type": "database" },
+    { "participant": "fs", "from": 530, "to": 560, "type": "database" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Key point",
+      "items": [
+        "Not a second agent running alongside",
+        "Same pi agent follows task-observer rules",
+        "Observations are written silently during work",
+        "User controls every skill update"
+      ]
+    }
+  ]
+}

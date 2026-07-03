@@ -145,6 +145,13 @@ on another skill to invoke it, a breakdown in that chain would silence all
 observation activity. Instead, load both task-observer and any related skills
 directly from your configuration instructions.
 
+**Manual mode:** Auto-loading is optional. If you prefer not to load this
+skill in every session, omit the AGENTS.md activation instruction and invoke
+task-observer explicitly when you want it — for example, by saying
+"watch for skill opportunities", "run a skill review", or
+"any observations logged?". In manual mode, the session-start config check
+is silent; do not suggest creating AGENTS.md.
+
 ### Detecting the Configuration File
 
 At session start, the skill should check whether a configuration file
@@ -154,10 +161,9 @@ activation instruction. This detection serves two purposes:
 1. **For users who already have the config:** Confirms the dual-layer
    activation is working. No action needed.
 
-2. **For users who don't have the config:** The skill was activated via
-   description matching alone, which is less reliable. Surface a brief
-   suggestion to add the config-level instruction for more consistent
-   activation in future sessions.
+2. **For users who don't have the config:** If this is a manual invocation
+   (no AGENTS.md activation present), remain silent and proceed. Only surface
+   a brief suggestion if the user seems to expect automatic activation.
 
 The detection approach depends on the environment:
 
@@ -165,14 +171,15 @@ The detection approach depends on the environment:
   tools): Check for an AGENTS.md or equivalent file in the workspace root.
   If found, scan it for a task-observer activation instruction. If the file
   exists but doesn't mention task-observer, suggest adding the instruction.
-  If no config file exists at all, suggest creating one.
+  If no config file exists at all, remain silent — this is expected in manual
+  mode.
 
 - **Environments without file system access** (web-based chat): Check
   whether the system prompt or project instructions contain a task-observer
-  activation instruction. If not, suggest that the user add one to their
-  project settings or paste the instruction at the start of future sessions.
+  activation instruction. If not, remain silent unless the user asks how to
+  make it automatic.
 
-This check runs once at session start and does not repeat. Keep the
+This check runs once at session start and does not repeat. Keep any
 suggestion brief — one or two sentences, not a full tutorial.
 
 ### Compaction Behaviour
