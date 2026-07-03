@@ -96,11 +96,11 @@ operational instruction for the agent.
 ## Conventions
 
 `[workspace folder]` refers to the user's persistent workspace directory —
-the location where files survive between sessions. In pi, this is the
-knowledge-base folder chosen during setup (Step 4 of the installation guide).
-All observation logs, cross-cutting principles, and staged skill updates live
-there. pi has filesystem access in every session, so the persistent-storage
-workflow applies; handoff-doc mode (see Environment Compatibility) is not needed.
+the location where files survive between sessions. In pi, the default
+knowledge-base folder is `~/repos/skill-knowledge-base/`. All observation
+logs, cross-cutting principles, and staged skill updates live there. pi has
+filesystem access in every session, so the persistent-storage workflow
+applies; handoff-doc mode (see Environment Compatibility) is not needed.
 
 ---
 
