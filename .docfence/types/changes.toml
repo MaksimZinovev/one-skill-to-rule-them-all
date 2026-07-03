@@ -26,7 +26,11 @@ required_sections = [
 
 [defaults.match]
 net_change_skill = '^Net change \(SKILL\.md'
+net_change_progressive = '^Net change \(progressive disclosure'
+net_change_total = '^Total:'
 resolves_end_goal = '^Resolves: end goal$'
+classification_label = '^- (A|B|C|Direct fix)([—:]|\b)'
+deletions_content = '^(No deletions\.|- .+ — .+)'
 
 [template_vars]
 id = ""
