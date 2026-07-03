@@ -1326,11 +1326,35 @@ write directly to `~/.pi/agent/skills/` because Pi's security layer blocks it.
    [workspace folder]/skill-updates/[date]/[skill-name]/SKILL.md
    ```
 
-2. Tell the user the exact path to each updated skill file so they can
-   review it and copy it into `~/.pi/agent/skills/[skill-name]/SKILL.md` to
-   install it.
+2. Next to each staged skill file, write a structured change rationale doc
+   named `CHANGES.md` in the same directory:
 
-3. Present the user with a summary using this format:
+   ```
+   [workspace folder]/skill-updates/[date]/[skill-name]/CHANGES.md
+   ```
+
+   This doc explains **why** the changes were made — reasoning, context, and
+   basis (which observations/principles drove each change). Keep it **under
+   50 lines**. Structure:
+
+   - At the **very top**, a net-change estimate for the accompanying SKILL.md:
+     ```
+     Net change: +[additions] / -[deletions] = [net] lines
+     ```
+     Compute additions/deletions by diffing the staged SKILL.md against the
+     live file at `~/.pi/agent/skills/[skill-name]/SKILL.md`
+     (e.g. `git diff --no-index live.md staged.md --stat`, or
+     `diff live.md staged.md | grep -c '^>'` for additions and `grep -c '^<'`
+     for deletions).
+   - Then a short section per change: what changed, which observation
+     (#N) or principle drove it, and the reasoning.
+
+3. Tell the user the exact path to each updated skill file (and its
+   `CHANGES.md`) so they can review them and copy the SKILL.md into
+   `~/.pi/agent/skills/[skill-name]/SKILL.md` to install it. The CHANGES.md
+   stays in the staging area as the audit record — it is not installed.
+
+4. Present the user with a summary using this format:
 
    ```
    ## Weekly Skill Review Complete — [date]
