@@ -29,6 +29,7 @@ net_change_skill = '^Net change \(SKILL\.md'
 net_change_progressive = '^Net change \(progressive disclosure'
 net_change_total = '^Total:'
 resolves_end_goal = '^Resolves: end goal$'
+anti_pattern_check = '^Anti-pattern check: considered$'
 classification_label = '^- (A|B|C|Direct fix)([—:]|\b)'
 deletions_content = '^(No deletions\.|- .+ — .+)'
 
@@ -57,4 +58,4 @@ fill = "One line per change, tagged: A (offload to reference files), B (net-zero
 fill = "Every semantic deletion (section/line removed or shortened, not whitespace) + one line of reasoning for why it is safe to drop. Or `No deletions.` Mandatory — prevents silently dropping meaningful content."
 
 [template_vars.sections."Per-change rationale"]
-fill = "What changed, which observation (#N) or principle drove it, reasoning. For any change touching persisted state (profiles, tokens, cookies, /tmp, caches, credentials), add a `Second-session check:` line describing what happens after a reboot / on the next session."
+fill = "What changed, which observation (#N) or principle drove it, reasoning. For any change touching persisted state (profiles, tokens, cookies, /tmp, caches, credentials), add a `Second-session check:` line describing what happens after a reboot / on the next session. Add an `Anti-pattern check: considered` line attesting you read references/mistakes-to-avoid.md and checked the proposal against its symptom-vs-root-cause and will-it-work-at-failure-moment anti-patterns."

@@ -1394,6 +1394,14 @@ write directly to `~/.pi/agent/skills/` because Pi's security layer blocks it.
    resolve the user's problem — rework it before staging. docfence rejects
    `Resolves: symptom` automatically (banned word).
 
+   Before proposing, read `references/mistakes-to-avoid.md` and check the
+   proposal against its anti-patterns: **(a) treating the symptom as the
+   root cause**, and **(b) not asking "will this actually work at the moment
+   of failure — and does it reuse the skill's existing mechanisms instead of
+   inventing new ones?"** The examples are browser-specific; the patterns
+   generalize to any skill. CHANGES.md must include a line
+   `Anti-pattern check: considered` (enforced by the `changes` docfence type).
+
 4. **Validate.** Run both gates; both must pass before presenting:
 
    ```bash
